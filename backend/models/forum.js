@@ -5,16 +5,23 @@ const forumSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  author: String,
+  author: {
+    type: String,
+    required: true,
+  },
   url: {
     type: String,
     required: true,
   },
-  likes: Number,
+  likes: {
+    type: Number,
+    required: false,
+    default: 0,
+  },
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  }
+    ref: 'User',
+  },
 })
 
 forumSchema.set('toJSON', {
@@ -22,7 +29,7 @@ forumSchema.set('toJSON', {
     returnedObject.id = returnedObject._id.toString()
     delete returnedObject._id
     delete returnedObject.__v
-  }
+  },
 })
 
 module.exports = mongoose.model('Forum', forumSchema)
