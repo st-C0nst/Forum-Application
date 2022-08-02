@@ -1,92 +1,74 @@
 const forumsRouter = require('express').Router()
 const Forum = require('../models/forum')
+const User = require('../models/user')
+const jwt = require('jsonwebtoken')
+const config = require('../utils/config')
 
 forumsRouter.get('/', async (request, response) => {
   const forums = await Forum
     .find({})
-    .populate('user', { username: 1, name: 1 })
+    .populate('user', { username: 1, name: 1, id: 1, })
   response.json(forums)
 })
 
 forumsRouter.get('/:id', async (request, response) => {
-  const forum = await Forum.findById(request.params.id)
-
-  if (forum) {
-    response.json(forum.toJSON())
-  } else {
-    response.status(404).end()
-  }
+    const resultForum = await Forum
+      .findById(request.params.id)
+      .populate('user', { username: 1, name: 1, id: 1})
+    if (resultForum) {
+      response.json(resultForum.toJSON)
+    } else {
+      response.status(404).end()
+    }
 })
 
 forumsRouter.post('/', async (request, response) => {
-  const body = request.body
-
   const token = request.token
-  const user = request.user
-
-  if (!token || !user.id) {
+  const decodedToken = jwt.verify(token, config.SECRET)
+  if (!token || !decodedToken.id) {
     return response.status(401).json({ error: 'token missing or invalid' })
   }
+  const user = await User.findById(decodedToken.id)
 
   const forum = new Forum({
-    title: body.title,
-    author: body.author,
-    url: body.url,
-    likes: body.likes ? body.likes : 0,
-    user: user._id
+    ...request.body,
+    user: user._id,
   })
 
   const savedForum = await forum.save()
-  user.forum = user.forum.concat(savedForum._id)
+  user.forums = user.forums.concat(savedForum._id)
   await user.save()
 
   response.status(201).json(savedForum)
 })
 
-forumsRouter.delete('/:id', async (request, response) => {
-  const token = request.token
-  const user = request.user
-
-  if (!token || !user.id) {
-    return response.status(401).json({ error: 'token missing or invalid' })
+forumsRouter.put('/:id', async (request, response) => {
+  const updatedForum = {
+    ...request.body,
   }
 
-  const forumToDelete = await Forum.findById(request.params.id)
+  const savedForum = await Forum.findByIdAndUpdate(request.params.id, updatedForum, { new: true })
+  const codeStatus = savedForum ? 200 : 404
 
-  if(!forumToDelete){
-    return response.status(404).send({ error: 'forum not found' })
-  }
-
-  if ( forumToDelete.user._id.toString() === user._id.toString() ) {
-    await Forum.findByIdAndRemove(request.params.id)
-    response.status(204).end()
-  } else {
-    return response.status(401).json({ error: 'Unauthorized' })
-  }
+  response.status(codeStatus).json(savedForum)
 })
 
-forumsRouter.put('/:id', async (request, response, next) => {
-  const body = request.body
+forumsRouter.delete('/:id', async (request, response) => {
   const token = request.token
-  const user = request.user
-
-  if (!token || !user.id) {
+  const decodedToken = jwt.verify(token, config.SECRET)
+  if (!token || !decodedToken.id) {
     return response.status(401).json({ error: 'token missing or invalid' })
   }
 
-  const forum = Forum({
-    title: body.title,
-    author: body.author,
-    url: body.url,
-    likes: body.likes
-  })
+  const Id = request.params.id
+  const forum = await Forum.findById(Id)
 
-  Forum.findByIdAndUpdate(request.params.id, forum, { new: true })
-    .then(updatedNote => {
-      response.json(updatedNote)
-    })
-    .catch(error => next(error))
-
+  if (forum.user.toString() === decodedToken.id.toString()) {
+    await Forum.findByIdAndDelete(Id)
+    response.status(204).end()
+  } else {
+    response.status(401).json({ error: 'Unauthorized' }) //change error 
+  }
 })
 
 module.exports = forumsRouter
