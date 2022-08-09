@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "forum backend",
+  "description": "",
   "main": "index.js",
   "scripts": {
     "start": "cross-env NODE_ENV=production node index.js",
@@ -9,18 +9,19 @@
     "test": "cross-env NODE_ENV=test jest --verbose --runInBand",
     "start:test": "cross-env NODE_ENV=tests node index.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/st-C0nst/Forum-Application.git"
+  "jest": {
+    "testEnvironment": "node"
   },
-  "author": "Nicholas Costanza",
+  "keywords": [],
+  "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/st-C0nst/Forum-Application/issues"
+  "devDependencies": {
+    "jest": "^26.0.1",
+    "nodemon": "^2.0.4",
+    "supertest": "^4.0.2"
   },
-  "homepage": "https://github.com/st-C0nst/Forum-Application#readme",
   "dependencies": {
-    "bcrypt": "^5.0.0",
+    "bcrypt": "^4.0.1",
     "cors": "^2.8.5",
     "cross-env": "^7.0.2",
     "dotenv": "^8.2.0",
@@ -29,13 +30,5 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.9.15",
     "mongoose-unique-validator": "^2.0.3"
-  },
-  "devDependencies": {
-    "jest": "^26.0.1",
-    "nodemon": "^2.0.4",
-    "supertest": "^4.0.2"
-  },
-  "jest": {
-    "testEnvironment": "node"
   }
 }
