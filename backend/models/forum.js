@@ -1,17 +1,27 @@
 const mongoose = require('mongoose')
 
+mongoose.set('useFindAndModify', false)
+
 const forumSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
+    minlength: 5,
+  },
+  content: {
+    type: String,
+    required: true,
+    minlength: 5,
   },
   author: {
     type: String,
     required: true,
+    minlength: 3,
   },
   url: {
     type: String,
     required: true,
+    minlength: 5,
   },
   likes: {
     type: Number,
@@ -22,6 +32,12 @@ const forumSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
+  comments: {
+    type: Array,
+    default: [],
+  },
+}, {
+  timestamps: true
 })
 
 forumSchema.set('toJSON', {
